@@ -7,19 +7,57 @@ output:
 
 
 ## Loading and preprocessing the data
-
+We start by unzipping the data from the GitHub repo, importing as a data frame,
+and then populating a few vectors that will be useful for us later.
+```{r}
+unzip('~/github/RepData_PeerAssessment1/activity.zip')
+activityDF <- as.data.frame(read.table('activity.csv',
+                                       header = TRUE,
+                                       sep = ",",
+                                       colClasses = c("integer",
+                                                      "Date",
+                                                      "integer")
+                                       )
+                            )
+uniqueDays <- as.Date(unique(activityDF$date))
+intervals <- unique(activityDF$interval)
+```
 
 
 ## What is mean total number of steps taken per day?
-
+The mean total number of steps per day is 10766
+```{r}
+dayTotals <- numeric()
+for (day in uniqueDays) {
+      tempDate <- activityDF[activityDF$date == as.Date(day, origin="1970-01-01"),]
+      daySum <- sum(tempDate$steps)
+      dayTotals <- append(dayTotals, daySum)
+}
+dayMean <- mean(dayTotals, na.rm = T)
+print(dayMean)
+```
 
 
 ## What is the average daily activity pattern?
+```{r}
+dailyPattern <- data.frame(intervals=integer(),
+                           averages=numeric())
+for (i in intervals){
+      tempInterval <- activityDF[activityDF$interval == i,]
+      intervalAverage = mean(tempInterval$steps, na.rm = T)
+      dailyPattern <- rbind(dailyPattern,data.frame(intervals = i, averages = intervalAverage))
+}
 
+```
 
 
 ## Imputing missing values
-
+```{r}
+#activityDF$steps[is.na(activityDF$steps)] = mean(activityDF$steps, na.rm = T)
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r}
+
+```
