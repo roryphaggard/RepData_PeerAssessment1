@@ -21,7 +21,6 @@ activityDF <- as.data.frame(read.table('activity.csv',
                             )
 uniqueDays <- as.Date(unique(activityDF$date))
 intervals <- unique(activityDF$interval)
-daysOfWeek <- weekdays(uniqueDays)
 ```
 
 
@@ -42,32 +41,53 @@ print(dayMean)
 
 
 ## What is the average daily activity pattern?
+The average daily activity indicates the highest level of activity to be in the late
+morning and the lowest level of activity during the early morning hours that would
+generally correlate with sleep.
+
 ```{r}
-colMax <- function(data) sapply(data, max, na.rm = T)
+# Instate an empty data frame to fill with the average interval data
 dailyPattern <- data.frame(intervals=integer(),
                            averages=numeric())
+# Loop through the intervals and average them across all 61 days of data. Append
+# results to the data frame from above
 for (i in intervals){
       tempInterval <- activityDF[activityDF$interval == i,]
       intervalAverage = mean(tempInterval$steps, na.rm = T)
       dailyPattern <- rbind(dailyPattern,data.frame(intervals = i, averages = intervalAverage))
 }
+# Generate a plot showing the average movement per interval over the course of the day
 plot(dailyPattern$intervals,
      dailyPattern$averages,
      type = "l",
-     xlim = range(dailyPattern$intervals)
+     xlim = range(dailyPattern$intervals),
+     xlab = c("Interval"),
+     ylab = c("Average Number of Steps")
      )
-maximum <- colMax(dailyPattern)
+# Create fucntion to find the maximum value for steps and the interval referenced,
+# and then use it.
+colMax <- function(data) sapply(data, max, na.rm = T)
+maximum <- colMax(dailyPattern$averages)
+#match(dailyPattern$averages,maximum$averages)
+print(maximum)
 ```
 
 
 ## Imputing missing values
 ```{r}
-#activityDF$steps[is.na(activityDF$steps)] = mean(activityDF$steps, na.rm = T)
+# Find the total number of missing values
+missingValueTotal <- sum(is.na(activityDF$steps))
+print(missingValueTotal)
+# Create a copy of the original dataframe for comparison purposes
+originalDF <- activityDF
+activityDF$steps[is.na(activityDF$steps)] = mean(activityDF$steps, na.rm = T)
 
 ```
 
-
 ## Are there differences in activity patterns between weekdays and weekends?
 ```{r}
+# Determine the day of the week and then merge that vectory with the primary data frame
+daysOfWeek <- weekdays(activityDF$date)
+activityDF[,"DayOfWeek"] <- daysOfWeek
 
 ```
