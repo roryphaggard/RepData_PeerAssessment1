@@ -37,6 +37,20 @@ for (day in uniqueDays) {
 dayMean <- mean(dayTotals, na.rm = T)
 dayMedian <- median(dayTotals, na.rm = T)
 print(dayMean)
+print(dayMedian)
+totalSteps <- na.omit(data.frame(uniqueDays,dayTotals))
+totalSteps$uniqueDays <- as.POSIXct(totalSteps$uniqueDays)
+library(ggplot2)
+library(scales)
+p <- ggplot(
+      totalSteps, aes()) +
+      geom_histogram(binwidth = 61) +
+      theme_classic() +
+      xlab(c("Date")) +
+      ylab(c("Total Steps")) +
+      scale_x_datetime(breaks = date_breaks(width = "1 day")
+      )
+p
 ```
 
 
@@ -79,9 +93,31 @@ print(maximum)
 missingValueTotal <- sum(is.na(activityDF$steps))
 print(missingValueTotal)
 # Create a copy of the original dataframe for comparison purposes
-originalDF <- activityDF
-activityDF$steps[is.na(activityDF$steps)] = mean(activityDF$steps, na.rm = T)
-
+newDF <- activityDF
+# Fill in the missing values with the average number of steps taken per interval
+newDF$steps[is.na(activityDF$steps)] = mean(newDF$steps, na.rm = T)
+# Run the analyses from before
+newDayTotals <- numeric()
+for (newDay in uniqueDays) {
+      newTempDate <- newDF[newDF$date == as.Date(newDay, origin="1970-01-01"),]
+      newDaySum <- sum(newTempDate$steps)
+      newDayTotals <- append(newDayTotals, newDaySum)
+}
+newDayMean <- mean(newDayTotals, na.rm = T)
+newDayMedian <- median(newDayTotals, na.rm = T)
+print(newDayMean)
+print(newDayMedian)
+newTotalSteps <- na.omit(data.frame(uniqueDays,newDayTotals))
+newTotalSteps$uniqueDays <- as.POSIXct(newTotalSteps$uniqueDays)
+p <- ggplot(
+      newTotalSteps, aes()) +
+      geom_histogram(binwidth = 61) +
+      theme_classic() +
+      xlab(c("Date")) +
+      ylab(c("Total Steps")) +
+      scale_x_datetime(breaks = date_breaks(width = "1 Day")
+      )
+p
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -89,5 +125,43 @@ activityDF$steps[is.na(activityDF$steps)] = mean(activityDF$steps, na.rm = T)
 # Determine the day of the week and then merge that vectory with the primary data frame
 daysOfWeek <- weekdays(activityDF$date)
 activityDF[,"DayOfWeek"] <- daysOfWeek
-
+dailyWePattern <- data.frame()
+# Get weekend interval averages
+we <- activityDF[activityDF$DayOfWeek %in% c("Saturday","Sunday"),]
+weAvg <- for (i in intervals){
+      tempWeInterval <- activityDF[we$interval == i,]
+      intervalAverage = mean(we$steps, na.rm = T)
+      dailyWePattern <- rbind(dailyWePattern,data.frame(intervals = i, averages = intervalAverage))      
+}
+# Get weekday interval averages
+dailyWdPattern <- data.frame()
+wd <- activityDF[activityDF$DayOfWeek %in% c("Monday","Tuesday","Wednesday","Thursday","Friday"),]
+wdAvg <- for (i in intervals){
+      tempWdInterval <- activityDF[wd$interval == i,]
+      intervalAverage = mean(wd$steps, na.rm = T)
+      dailyWdPattern <- rbind(dailyWdPattern,data.frame(intervals = i, averages = intervalAverage))
+}
+# Plot the weekend and weekday interval averages together
+plot(dailyWePattern$intervals,
+     dailyWePattern$averages,
+     type = "l",
+     xlim = range(dailyWePattern$intervals),
+     xlab = "Interval",
+     ylab = "Number of Steps",
+     col = "blue")
+par(new=T)
+plot(dailyWePattern$intervals,
+     dailyWdPattern$averages,
+     type = "l",
+     xlim = range(dailyWePattern$intervals),
+     xlab = "",
+     ylab = "",
+     col = "red",
+     axes = F)
+par(new=T)
+legend("bottomright",
+       lty = c(1,1),
+       lwd = c(2,2),
+       legend = c("Weekends","Weekdays"),
+       col = c("blue","red"))
 ```
