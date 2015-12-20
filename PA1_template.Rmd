@@ -88,6 +88,7 @@ print(maximum)
 
 
 ## Imputing missing values
+Imputing the missing values changes both the mean and the median daily averages to 10766.19.  This does not appear to have had a significant effect on the nature of the data.
 ```{r}
 # Find the total number of missing values
 missingValueTotal <- sum(is.na(activityDF$steps))
@@ -121,45 +122,49 @@ p
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+There aren't any discerible differences in activity pattern betweem weekdays and weekends for this data set.
 ```{r}
 # Determine the day of the week and then merge that vectory with the primary data frame
-daysOfWeek <- weekdays(activityDF$date)
-activityDF[,"DayOfWeek"] <- daysOfWeek
+daysOfWeek <- weekdays(newDF$date)
+newDF[,"DayOfWeek"] <- daysOfWeek
 dailyWePattern <- data.frame()
 # Get weekend interval averages
-we <- activityDF[activityDF$DayOfWeek %in% c("Saturday","Sunday"),]
-weAvg <- for (i in intervals){
-      tempWeInterval <- activityDF[we$interval == i,]
-      intervalAverage = mean(we$steps, na.rm = T)
-      dailyWePattern <- rbind(dailyWePattern,data.frame(intervals = i, averages = intervalAverage))      
+we <- newDF[newDF$DayOfWeek %in% c("Saturday","Sunday"),]
+for (i in intervals){
+      tempWeInterval <- newDF[we$interval == i,]
+      intervalWeAverage = mean(tempWeInterval$steps, na.rm = T)
+      dailyWePattern <- rbind(dailyWePattern,data.frame(intervals = i, averages = intervalWeAverage))      
 }
 # Get weekday interval averages
 dailyWdPattern <- data.frame()
-wd <- activityDF[activityDF$DayOfWeek %in% c("Monday","Tuesday","Wednesday","Thursday","Friday"),]
-wdAvg <- for (i in intervals){
-      tempWdInterval <- activityDF[wd$interval == i,]
-      intervalAverage = mean(wd$steps, na.rm = T)
-      dailyWdPattern <- rbind(dailyWdPattern,data.frame(intervals = i, averages = intervalAverage))
+wd <- newDF[newDF$DayOfWeek %in% c("Monday","Tuesday","Wednesday","Thursday","Friday"),]
+for (i in intervals){
+      tempWdInterval <- newDF[wd$interval == i,]
+      intervalWdAverage = mean(tempWdInterval$steps, na.rm = T)
+      dailyWdPattern <- rbind(dailyWdPattern,data.frame(intervals = i, averages = intervalWdAverage))
 }
 # Plot the weekend and weekday interval averages together
 plot(dailyWePattern$intervals,
      dailyWePattern$averages,
      type = "l",
-     xlim = range(dailyWePattern$intervals),
+     lwd = c(4,4),
      xlab = "Interval",
      ylab = "Number of Steps",
-     col = "blue")
+     ylim = range(dailyWePattern$averages),
+     col = "blue"
+     )
 par(new=T)
-plot(dailyWePattern$intervals,
+plot(dailyWdPattern$intervals,
      dailyWdPattern$averages,
      type = "l",
-     xlim = range(dailyWePattern$intervals),
      xlab = "",
      ylab = "",
+     ylim = range(dailyWdPattern$averages),
      col = "red",
-     axes = F)
+     axes = F
+     )
 par(new=T)
-legend("bottomright",
+legend("topleft",
        lty = c(1,1),
        lwd = c(2,2),
        legend = c("Weekends","Weekdays"),
