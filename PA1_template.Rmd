@@ -8,11 +8,11 @@ output:
 
 ## Loading and preprocessing the data
 We start by unzipping the data from the GitHub repo, importing as a data frame,
-and then populating a few vectors that will be useful for us later.
+and then populating a few vectors that will be useful for us later in the analysis.
 ```{r}
 unzip('~/github/RepData_PeerAssessment1/activity.zip')
 activityDF <- as.data.frame(read.table('activity.csv',
-                                       header = TRUE,
+                                       header = T,
                                        sep = ",",
                                        colClasses = c("integer",
                                                       "Date",
@@ -21,11 +21,13 @@ activityDF <- as.data.frame(read.table('activity.csv',
                             )
 uniqueDays <- as.Date(unique(activityDF$date))
 intervals <- unique(activityDF$interval)
+daysOfWeek <- weekdays(uniqueDays)
 ```
 
 
 ## What is mean total number of steps taken per day?
-The mean total number of steps per day is 10766
+The mean total number of steps per day is 10766.19.
+The median total number of steps per day is 10765.
 ```{r}
 dayTotals <- numeric()
 for (day in uniqueDays) {
@@ -34,12 +36,14 @@ for (day in uniqueDays) {
       dayTotals <- append(dayTotals, daySum)
 }
 dayMean <- mean(dayTotals, na.rm = T)
+dayMedian <- median(dayTotals, na.rm = T)
 print(dayMean)
 ```
 
 
 ## What is the average daily activity pattern?
 ```{r}
+colMax <- function(data) sapply(data, max, na.rm = T)
 dailyPattern <- data.frame(intervals=integer(),
                            averages=numeric())
 for (i in intervals){
@@ -47,13 +51,19 @@ for (i in intervals){
       intervalAverage = mean(tempInterval$steps, na.rm = T)
       dailyPattern <- rbind(dailyPattern,data.frame(intervals = i, averages = intervalAverage))
 }
-
+plot(dailyPattern$intervals,
+     dailyPattern$averages,
+     type = "l",
+     xlim = range(dailyPattern$intervals)
+     )
+maximum <- colMax(dailyPattern)
 ```
 
 
 ## Imputing missing values
 ```{r}
 #activityDF$steps[is.na(activityDF$steps)] = mean(activityDF$steps, na.rm = T)
+
 ```
 
 
